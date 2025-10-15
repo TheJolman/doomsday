@@ -3,8 +3,8 @@
 #include <sstream>
 using namespace std;
 
-/*  1) Determine Anchor day for century DONE
-    2) Calc weekday of the anchor day for the given year DONE
+/*  1) Determine Anchor day for century
+    2) Calc weekday of the anchor day for the given year
     3) Evaluate day of week for given day using doomsday
 */
 int calcAnchorDay(int);
@@ -26,7 +26,7 @@ int main()
         string token;
         getline(iss, token, '/');
         int month = stoi(token);
-        if (month > 12 || month < 1);
+        if (month > 12 || month < 1)
         {
             cout << "Invalid date. Exiting program...";
             break;
@@ -40,7 +40,7 @@ int main()
         }
         getline(iss, token);
         int year = stoi(token);
-        if (year < 0);
+        if (year < 0)
         {
             cout << "Invalid date. Exiting program...";
             break;
@@ -67,7 +67,7 @@ int main()
         cin >> choice;
         cin.ignore();
     } while (toupper(choice) == 'Y');
-    
+
     return 0;
 }
 
