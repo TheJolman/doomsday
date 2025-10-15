@@ -1,7 +1,16 @@
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 #include <string>
+
 using namespace std;
+
+class DateException : public runtime_error {
+  string msg;
+
+public:
+  DateException() : runtime_error("Error: date does not exist") {}
+};
 
 /*  1) Determine Anchor day for century
     2) Calc weekday of the anchor day for the given year
@@ -10,37 +19,67 @@ using namespace std;
 int calcAnchorDay(int);
 int calcDoomsday(int);
 int calcWeekday(int, int, int);
-void errorMsg();
-enum weekDay { Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday };
+enum Weekday { Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday };
 
 int main() {
-  string date;
+  string input;
   int month, day, year;
   char choice;
-  do {
-    cout << "Enter a Date (mm/dd/yyyy)";
-    getline(cin, date);
-    istringstream iss(date);
-    string token;
-    getline(iss, token, '/');
 
-    int month = stoi(token);
-    if (month > 12 || month < 1) {
-      cout << "Invalid date. Exiting program...";
-      break;
+  // main loop
+  do {
+    input = {};
+    choice = {};
+    month = 0;
+    day = 0;
+    year = 0;
+    bool dateValid = false;
+
+    // input validation loop
+    while (!dateValid) {
+      dateValid = true;
+
+      cout << "Enter a Date (mm/dd/yyyy): ";
+
+      try {
+        getline(cin, input);
+        istringstream iss(input);
+        string token;
+
+        // Month
+        getline(iss, token, '/');
+        int month = stoi(token);
+        if (month > 12 || month < 1) {
+          throw DateException();
+        }
+
+        // Day
+        getline(iss, token, '/');
+        int day = stoi(token);
+        if (day > 31 || day < 1) {
+          throw DateException();
+        }
+
+        // Year
+        getline(iss, token);
+        int year = stoi(token);
+        if (year < 0) {
+          throw DateException();
+        }
+
+      } catch (const DateException &e) {
+        dateValid = false;
+        std::cerr << e.what() << "\n";
+        cin.clear();
+        cin.ignore();
+      } catch (const exception &e) {
+        dateValid = false;
+        std::cerr << "Error: invalid date format\n";
+        cin.clear();
+        cin.ignore();
+      }
     }
-    getline(iss, token, '/');
-    int day = stoi(token);
-    if (day > 31 || day < 1) {
-      cout << "Invalid date. Exiting program...";
-      break;
-    }
-    getline(iss, token);
-    int year = stoi(token);
-    if (year < 0) {
-      cout << "Invalid date. Exiting program...";
-      break;
-    }
+
     string dayOfWeek = "";
     switch (calcWeekday(month, day, year)) {
     case 0:
