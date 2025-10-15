@@ -18,18 +18,37 @@ public:
 */
 
 enum class Weekday {
-  Sunday,
-  Monday,
-  Tuesday,
-  Wednesday,
-  Thursday,
-  Friday,
-  Saturday
+  Sunday = 0,
+  Monday = 1,
+  Tuesday = 2,
+  Wednesday = 3,
+  Thursday = 4,
+  Friday = 5,
+  Saturday = 6
 };
+
+string to_string(Weekday w) {
+  switch (w) {
+  case Weekday::Sunday:
+    return "Sunday";
+  case Weekday::Monday:
+    return "Monday";
+  case Weekday::Tuesday:
+    return "Tuesday";
+  case Weekday::Wednesday:
+    return "Wednesday";
+  case Weekday::Thursday:
+    return "Thursday";
+  case Weekday::Friday:
+    return "Friday";
+  case Weekday::Saturday:
+    return "Saturday";
+  }
+}
 
 Weekday calcAnchorDay(int);
 int calcDoomsday(int);
-int calcWeekday(int, int, int);
+Weekday calcWeekday(int, int, int);
 
 int main() {
   string input;
@@ -87,29 +106,7 @@ int main() {
     }
 
     string weekdayStr = "";
-    switch (calcWeekday(month, day, year)) {
-    case 0:
-      weekdayStr = "Sunday";
-      break;
-    case 1:
-      weekdayStr = "Monday";
-      break;
-    case 2:
-      weekdayStr = "Tuesday";
-      break;
-    case 3:
-      weekdayStr = "Wednesday";
-      break;
-    case 4:
-      weekdayStr = "Thursday";
-      break;
-    case 5:
-      weekdayStr = "Friday";
-      break;
-    case 6:
-      weekdayStr = "Saturday";
-    }
-    cout << "Day of week: " << weekdayStr << endl;
+    cout << "Day of week: " << to_string(calcWeekday(month, day, year)) << "\n";
     cout << "Go again? y/n ";
     cin >> choice;
     cin.ignore();
@@ -146,7 +143,7 @@ int calcDoomsday(int year) {
   return (calc1 + calc2 + leapyear + (int)calcAnchorDay(year)) % 7;
 }
 
-int calcWeekday(int month, int day, int year) {
-  int doomsDays[12] = {3, 28, 0, 4, 9, 6, 11, 8, 5, 10, 7, 12};
-  return (day + calcDoomsday(year)) % 7;
+Weekday calcWeekday(int month, int day, int year) {
+  constexpr int doomsDays[12] = {3, 28, 0, 4, 9, 6, 11, 8, 5, 10, 7, 12};
+  return Weekday((day + calcDoomsday(year)) % 7);
 }
