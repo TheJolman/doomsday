@@ -1,3 +1,12 @@
+/*
+ * Doomsday Algorithm
+ * 1) Determine Anchor day for century
+ * 2) Calc weekday of the anchor day for the given year
+ * 3) Evaluate day of week for given day using known doomsday as jumping-off
+ *    point
+ */
+
+#include <exception>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -13,14 +22,6 @@ public:
   DateException()
       : runtime_error("Error: date does not exist or unsupported.") {}
 };
-
-/*
- * Doomsday Algorithm
- * 1) Determine Anchor day for century
- * 2) Calc weekday of the anchor day for the given year
- * 3) Evaluate day of week for given day using known doomsday as jumping-off
- *    point
- */
 
 enum class Weekday {
   Sunday = 0,
@@ -51,8 +52,8 @@ string to_string(Weekday w) {
   }
 }
 
-Weekday calcAnchorDay(int);
-Weekday calcDoomsday(int);
+Weekday calcAnchorDay(int) noexcept;
+Weekday calcDoomsday(int) noexcept;
 Weekday calcWeekday(int, int, int);
 
 int main() {
@@ -110,7 +111,13 @@ int main() {
       }
     }
 
-    cout << "Day of week: " << to_string(calcWeekday(month, day, year)) << "\n";
+    try {
+      auto res = calcWeekday(month, day, year);
+      cout << "Day of week: " << to_string(res) << "\n";
+    } catch (const exception &e) {
+      std::cerr << "Error: failed to calculate weekday: " << e.what() << "\n";
+    }
+
     cout << "Go again? y/n ";
     cin >> choice;
     cin.ignore();
@@ -124,7 +131,7 @@ int main() {
  *   5 * (c mod 4) mod 7 + Tuesday = anchor
  *   where c = floor(year / 100)
  */
-Weekday calcAnchorDay(int year) {
+Weekday calcAnchorDay(int year) noexcept {
   int century = year / 100;
   int res = 5 * (century % 4) % 7 + (int)Weekday::Tuesday;
   return Weekday(res);
@@ -134,7 +141,7 @@ Weekday calcAnchorDay(int year) {
  * Doomsdays are a day of the week that certain dates will always fall on in a
  * given year.
  */
-Weekday calcDoomsday(int year) {
+Weekday calcDoomsday(int year) noexcept {
   int last2digits = year - ((year / 100) * 100);
   int quotient = last2digits / 12;
   int remainder = last2digits % 12;
@@ -142,7 +149,7 @@ Weekday calcDoomsday(int year) {
   return Weekday(res);
 }
 
-bool is_leap_year(int year) {
+bool is_leap_year(int year) noexcept {
   return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
 }
 
