@@ -2,6 +2,8 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
+#include <unordered_map>
 
 using namespace std;
 
@@ -9,13 +11,17 @@ class DateException : public runtime_error {
   string msg;
 
 public:
-  DateException() : runtime_error("Error: date does not exist.") {}
+  DateException()
+      : runtime_error("Error: date does not exist or unsupported.") {}
 };
 
-/*  1) Determine Anchor day for century
-    2) Calc weekday of the anchor day for the given year
-    3) Evaluate day of week for given day using doomsday
-*/
+/*
+ * Doomsday Algorithm
+ * 1) Determine Anchor day for century
+ * 2) Calc weekday of the anchor day for the given year
+ * 3) Evaluate day of week for given day using known doomsday as jumping-off
+ *    point
+ */
 
 enum class Weekday {
   Sunday = 0,
@@ -92,7 +98,7 @@ int main() {
         // Year
         getline(iss, token);
         int year = stoi(token);
-        if (year < 0) {
+        if (year < 1600 || year > 2300) {
           throw DateException();
         }
 
@@ -115,26 +121,33 @@ int main() {
   return 0;
 }
 
+/**
+ * Anchor days are known and can be memorized, but here we use the formula:
+ * 5 * (c mod 4) mod 7 + Tuesday = anchor
+ */
 Weekday calcAnchorDay(int year) {
   int century = year / 100;
-  Weekday anchorDay;
-  switch (century % 4) {
-  case 0:
-    anchorDay = Weekday::Tuesday;
-    break;
-  case 1:
-    anchorDay = Weekday::Sunday;
-    break;
-  case 2:
-    anchorDay = Weekday::Friday;
-    break;
-  case 3:
-    anchorDay = Weekday::Wednesday;
-    break;
-  }
-  return anchorDay;
+
+  int res = 5 * (century % 4) % 7 + (int)Weekday::Tuesday;
+  return Weekday(res);
+
+  const unordered_map<int, Weekday> anchorDays{
+      {16, Weekday::Tuesday},   // 1600-1699
+      {17, Weekday::Sunday},    // 1700-1799
+      {18, Weekday::Friday},    // 1800-1899
+      {19, Weekday::Wednesday}, // 1900-1999
+      {20, Weekday::Tuesday},   // 2000-2100
+      {21, Weekday::Sunday},    // 2100-2199
+      {22, Weekday::Friday},    // 2200-2299
+  };
+
+  return anchorDays.at(century);
 }
 
+/**
+ * doomsdays are easy to remember dates that all fall on the same day of the
+ * week
+ */
 int calcDoomsday(int year) {
   int last2digits = year - ((year / 100) * 100);
   int calc1 = last2digits / 12;
