@@ -1,1 +1,6 @@
-simple C++ implementation of the doomsday algorithm. Probably not the most efficient but it works
+simple C++ implementation of the doomsday algorithm.
+
+Usage:
+```sh
+make && ./build/doomsday
+```
