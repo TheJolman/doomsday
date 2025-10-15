@@ -16,10 +16,20 @@ public:
     2) Calc weekday of the anchor day for the given year
     3) Evaluate day of week for given day using doomsday
 */
-int calcAnchorDay(int);
+
+enum class Weekday {
+  Sunday,
+  Monday,
+  Tuesday,
+  Wednesday,
+  Thursday,
+  Friday,
+  Saturday
+};
+
+Weekday calcAnchorDay(int);
 int calcDoomsday(int);
 int calcWeekday(int, int, int);
-enum Weekday { Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday };
 
 int main() {
   string input;
@@ -108,21 +118,21 @@ int main() {
   return 0;
 }
 
-int calcAnchorDay(int year) {
+Weekday calcAnchorDay(int year) {
   int century = year / 100;
-  int anchorDay;
+  Weekday anchorDay;
   switch (century % 4) {
   case 0:
-    anchorDay = Tuesday;
+    anchorDay = Weekday::Tuesday;
     break;
   case 1:
-    anchorDay = Sunday;
+    anchorDay = Weekday::Sunday;
     break;
   case 2:
-    anchorDay = Friday;
+    anchorDay = Weekday::Friday;
     break;
   case 3:
-    anchorDay = Wednesday;
+    anchorDay = Weekday::Wednesday;
     break;
   }
   return anchorDay;
@@ -133,7 +143,7 @@ int calcDoomsday(int year) {
   int calc1 = last2digits / 12;
   int calc2 = last2digits % 12;
   int leapyear = calc2 % 4;
-  return (calc1 + calc2 + leapyear + calcAnchorDay(year)) % 7;
+  return (calc1 + calc2 + leapyear + (int)calcAnchorDay(year)) % 7;
 }
 
 int calcWeekday(int month, int day, int year) {
