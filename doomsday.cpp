@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 using namespace std;
 
@@ -23,6 +24,8 @@ public:
       : runtime_error("Error: date does not exist or unsupported.") {}
 };
 
+using Month = int;
+using Day = int;
 enum class Weekday {
   Sunday = 0,
   Monday = 1,
@@ -34,27 +37,74 @@ enum class Weekday {
 };
 
 string to_string(Weekday w) {
-  switch (w) {
-  case Weekday::Sunday:
-    return "Sunday";
-  case Weekday::Monday:
-    return "Monday";
-  case Weekday::Tuesday:
-    return "Tuesday";
-  case Weekday::Wednesday:
-    return "Wednesday";
-  case Weekday::Thursday:
-    return "Thursday";
-  case Weekday::Friday:
-    return "Friday";
-  case Weekday::Saturday:
-    return "Saturday";
-  }
+  vector<string> days = {"Sunday",   "Monday", "Tuesday", "Wednesday",
+                         "Thursday", "Friday", "Saturday"};
+  return days[(int)w];
 }
 
-Weekday calcAnchorDay(const int year) noexcept;
-Weekday calcDoomsday(const int year, const Weekday anchor) noexcept;
-Weekday calcWeekday(const int month, const int day, const int year);
+namespace dday {
+/**
+ * Anchor days are known and can be memorized, but here we use the formula:
+ *   5 * (c mod 4) mod 7 + Tuesday = anchor
+ *   where c = floor(year / 100)
+ */
+Weekday calcAnchorDay(const int year) noexcept {
+  int century = year / 100;
+  int res = 5 * (century % 4) % 7 + (int)Weekday::Tuesday;
+  return Weekday(res);
+}
+
+/**
+ * Doomsdays are a day of the week that certain dates will always fall on in a
+ * given year.
+ */
+Weekday calcDoomsday(const int year, const Weekday anchor) noexcept {
+  int last2digits = year - ((year / 100) * 100);
+  int quotient = last2digits / 12;
+  int remainder = last2digits % 12;
+  int res = (quotient + remainder + (int)anchor) % 7;
+  return Weekday(res);
+}
+
+bool is_leap_year(int year) noexcept {
+  return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+}
+
+/**
+ * Final step - gets the weekday of the input date using the calculated doomsday
+ */
+Weekday calcWeekday(const int month, const int day, const int year) {
+  const unordered_map<Month, Day> referenceDoomsdays{
+      {1, is_leap_year(year) ? 3 : 4},
+      {2, is_leap_year(year) ? 3 : 4},
+      {3, 0}, // last day of Feb + 7
+      {4, 4},
+      {5, 9},
+      {6, 6},
+      {7, 11},
+      {8, 8},
+      {9, 5},
+      {10, 10},
+      {11, 7},
+      {12, 12},
+  };
+
+  int offset{};
+
+  if (month == 3) {
+    int daysInFeb = is_leap_year(year) ? 29 : 28;
+    offset = (day - daysInFeb) % 7;
+  } else {
+    offset = (day - referenceDoomsdays.at(month)) & 7;
+  }
+
+  auto anchor = calcAnchorDay(year);
+  auto doomsday = calcDoomsday(year, anchor);
+  int res = ((int)doomsday + offset) % 7;
+  return Weekday(res);
+}
+
+} // namespace dday
 
 int main() {
   string input;
@@ -113,7 +163,7 @@ int main() {
     }
 
     try {
-      auto res = calcWeekday(month, day, year);
+      auto res = dday::calcWeekday(month, day, year);
       cout << "Day of week: " << to_string(res) << "\n";
     } catch (const exception &e) {
       std::cerr << "Error: failed to calculate weekday: " << e.what() << "\n";
@@ -125,67 +175,4 @@ int main() {
   } while (toupper(choice) == 'Y');
 
   return 0;
-}
-
-/**
- * Anchor days are known and can be memorized, but here we use the formula:
- *   5 * (c mod 4) mod 7 + Tuesday = anchor
- *   where c = floor(year / 100)
- */
-Weekday calcAnchorDay(const int year) noexcept {
-  int century = year / 100;
-  int res = 5 * (century % 4) % 7 + (int)Weekday::Tuesday;
-  return Weekday(res);
-}
-
-/**
- * Doomsdays are a day of the week that certain dates will always fall on in a
- * given year.
- */
-Weekday calcDoomsday(const int year, const Weekday anchor) noexcept {
-  int last2digits = year - ((year / 100) * 100);
-  int quotient = last2digits / 12;
-  int remainder = last2digits % 12;
-  int res = (quotient + remainder + (int)anchor) % 7;
-  return Weekday(res);
-}
-
-bool is_leap_year(int year) noexcept {
-  return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
-}
-
-/**
- * Final step - gets the weekday of the input date using the calculated doomsday
- */
-Weekday calcWeekday(const int month, const int day, const int year) {
-  using Month = int;
-  using Day = int;
-  const unordered_map<Month, Day> referenceDoomsdays{
-      {1, is_leap_year(year) ? 3 : 4},
-      {2, is_leap_year(year) ? 3 : 4},
-      {3, 0}, // last day of Feb + 7
-      {4, 4},
-      {5, 9},
-      {6, 6},
-      {7, 11},
-      {8, 8},
-      {9, 5},
-      {10, 10},
-      {11, 7},
-      {12, 12},
-  };
-
-  int offset{};
-
-  if (month == 3) {
-    int daysInFeb = is_leap_year(year) ? 29 : 28;
-    offset = (day - daysInFeb) % 7;
-  } else {
-    offset = (day - referenceDoomsdays.at(month)) & 7;
-  }
-
-  auto anchor = calcAnchorDay(year);
-  auto doomsday = calcDoomsday(year, anchor);
-  int res = ((int)doomsday + offset) % 7;
-  return Weekday(res);
 }
