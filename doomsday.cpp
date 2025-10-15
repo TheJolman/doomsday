@@ -9,7 +9,7 @@ class DateException : public runtime_error {
   string msg;
 
 public:
-  DateException() : runtime_error("Error: date does not exist") {}
+  DateException() : runtime_error("Error: date does not exist.") {}
 };
 
 /*  1) Determine Anchor day for century
@@ -44,7 +44,7 @@ int main() {
       try {
         getline(cin, input);
         istringstream iss(input);
-        string token;
+        string token{};
 
         // Month
         getline(iss, token, '/');
@@ -70,40 +70,36 @@ int main() {
       } catch (const DateException &e) {
         dateValid = false;
         std::cerr << e.what() << "\n";
-        cin.clear();
-        cin.ignore();
       } catch (const exception &e) {
         dateValid = false;
-        std::cerr << "Error: invalid date format\n";
-        cin.clear();
-        cin.ignore();
+        std::cerr << "Error: could not read date. Try again.\n";
       }
     }
 
-    string dayOfWeek = "";
+    string weekdayStr = "";
     switch (calcWeekday(month, day, year)) {
     case 0:
-      dayOfWeek = "Sunday";
+      weekdayStr = "Sunday";
       break;
     case 1:
-      dayOfWeek = "Monday";
+      weekdayStr = "Monday";
       break;
     case 2:
-      dayOfWeek = "Tuesday";
+      weekdayStr = "Tuesday";
       break;
     case 3:
-      dayOfWeek = "Wednesday";
+      weekdayStr = "Wednesday";
       break;
     case 4:
-      dayOfWeek = "Thursday";
+      weekdayStr = "Thursday";
       break;
     case 5:
-      dayOfWeek = "Friday";
+      weekdayStr = "Friday";
       break;
     case 6:
-      dayOfWeek = "Saturday";
+      weekdayStr = "Saturday";
     }
-    cout << "Day of week: " << dayOfWeek << endl;
+    cout << "Day of week: " << weekdayStr << endl;
     cout << "Go again? y/n ";
     cin >> choice;
     cin.ignore();
