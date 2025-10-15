@@ -134,7 +134,6 @@ int main() {
         // Month
         getline(iss, token, '/');
         month = stoi(token);
-        std::cout << month << "\n";
         if (month > 12 || month < 1) {
           throw DateException();
         }
