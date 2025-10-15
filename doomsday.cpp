@@ -127,21 +127,8 @@ int main() {
  */
 Weekday calcAnchorDay(int year) {
   int century = year / 100;
-
   int res = 5 * (century % 4) % 7 + (int)Weekday::Tuesday;
   return Weekday(res);
-
-  const unordered_map<int, Weekday> anchorDays{
-      {16, Weekday::Tuesday},   // 1600-1699
-      {17, Weekday::Sunday},    // 1700-1799
-      {18, Weekday::Friday},    // 1800-1899
-      {19, Weekday::Wednesday}, // 1900-1999
-      {20, Weekday::Tuesday},   // 2000-2100
-      {21, Weekday::Sunday},    // 2100-2199
-      {22, Weekday::Friday},    // 2200-2299
-  };
-
-  return anchorDays.at(century);
 }
 
 /**
