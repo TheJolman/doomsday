@@ -139,8 +139,8 @@ std::tuple<int, int, int> parse_date(std::string date_str) {
 int main(int argc, char **argv) {
 
   if (argc < 2) {
-    std::cerr << "Error: argument expected.\n"
-              << "Usage: " << argv[0] << "[-h|--help] mm/dd/yyyy\n";
+    std::cerr << "Error: argument expected\n"
+              << "Usage: " << argv[0] << " [-h|--help] mm/dd/yyyy\n";
     std::exit(1);
   }
 
@@ -150,11 +150,11 @@ int main(int argc, char **argv) {
 
     if (arg == "--help" || arg == "-h") {
       std::cout
-          << "Usage: " << argv[0] << "[-h|--help] mm/dd/yyyy\n\n"
-          << "This program calculates the day of the week (nearly) any "
-             "date in the past or future falls on using the Doomsday "
-             "rule derived by John Conway. For more information, see the "
-             "Wikipedia article: https://en.wikipedia.org/wiki/Doomsday_rule\n";
+          << "Usage: " << argv[0] << " [-h|--help] mm/dd/yyyy\n\n"
+          << "This program calculates the day of the week that (nearly) any "
+             "date falls on. It uses the Doomsday rule derived by John Conway. "
+             "For more information, see the Wikipedia article on the topic: "
+             "https://en.wikipedia.org/wiki/Doomsday_rule\n";
       std::exit(0);
 
     } else {
