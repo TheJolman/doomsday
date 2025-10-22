@@ -106,72 +106,79 @@ Weekday calcWeekday(const int month, const int day, const int year) {
 
 } // namespace dday
 
-int main() {
-  string input;
-  int month, day, year;
-  char choice;
+std::tuple<int, int, int> parse_date(std::string date_str) {
+  int month, day, year = 0;
 
-  // main loop
-  do {
-    input = {};
-    choice = {};
-    month = 0;
-    day = 0;
-    year = 0;
-    bool dateValid = false;
+  istringstream iss(date_str);
+  string token{};
 
-    // input validation loop
-    while (!dateValid) {
-      dateValid = true;
+  // Month
+  getline(iss, token, '/');
+  month = std::stoi(token);
+  if (month > 12 || month < 1) {
+    throw DateException();
+  }
 
-      cout << "Enter a Date (mm/dd/yyyy): ";
+  // Day
+  getline(iss, token, '/');
+  day = std::stoi(token);
+  if (day > 31 || day < 1) {
+    throw DateException();
+  }
 
+  // Year
+  getline(iss, token);
+  year = std::stoi(token);
+  if (year < 1600 || year > 2300) {
+    throw DateException();
+  }
+
+  return std::make_tuple(month, day, year);
+}
+
+int main(int argc, char **argv) {
+
+  if (argc < 2) {
+    std::cerr << "Error: argument expected.\n"
+              << "Usage: " << argv[0] << "[-h|--help] mm/dd/yyyy\n";
+    std::exit(1);
+  }
+
+  // argparse loop
+  for (int i = 0; i < argc; i++) {
+    std::string arg = argv[i];
+
+    if (arg == "--help" || arg == "-h") {
+      std::cout
+          << "Usage: " << argv[0] << "[-h|--help] mm/dd/yyyy\n\n"
+          << "This program calculates the day of the week (nearly) any "
+             "date in the past or future falls on using the Doomsday "
+             "rule derived by John Conway. For more information, see the "
+             "Wikipedia article: https://en.wikipedia.org/wiki/Doomsday_rule\n";
+      std::exit(0);
+
+    } else {
       try {
-        getline(cin, input);
-        istringstream iss(input);
-        string token{};
-
-        // Month
-        getline(iss, token, '/');
-        month = stoi(token);
-        if (month > 12 || month < 1) {
-          throw DateException();
-        }
-
-        // Day
-        getline(iss, token, '/');
-        day = stoi(token);
-        if (day > 31 || day < 1) {
-          throw DateException();
-        }
-
-        // Year
-        getline(iss, token);
-        year = stoi(token);
-        if (year < 1600 || year > 2300) {
-          throw DateException();
-        }
+        auto [month, day, year] = parse_date(std::string(argv[1]));
+        auto res = dday::calcWeekday(month, day, year);
+        cout << "Day of week: " << to_string(res) << "\n";
 
       } catch (const DateException &e) {
-        dateValid = false;
         std::cerr << e.what() << "\n";
+        std::exit(1);
+
+      } catch (const std::invalid_argument &e) {
+        std::cerr << "Error: failed to parse date: " << e.what() << "\n";
+
+      } catch (const std::out_of_range &e) {
+        std::cerr << "Error: failed to parse date: " << e.what() << "\n";
+
       } catch (const exception &e) {
-        dateValid = false;
-        std::cerr << "Error: could not read date. Try again.\n";
+        std::cerr << "Error: an unexpected error occurred: " << e.what()
+                  << "\n";
       }
     }
-
-    try {
-      auto res = dday::calcWeekday(month, day, year);
-      cout << "Day of week: " << to_string(res) << "\n";
-    } catch (const exception &e) {
-      std::cerr << "Error: failed to calculate weekday: " << e.what() << "\n";
-    }
-
-    cout << "Go again? y/n ";
-    cin >> choice;
-    cin.ignore();
-  } while (toupper(choice) == 'Y');
+  }
 
   return 0;
 }
